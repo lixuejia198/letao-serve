@@ -1,5 +1,8 @@
 const sha256 = require("crypto-js/sha256");
-const axios = require('axios')
+const axios = require('axios');
+const crypto = require('crypto');
+const xml = require('xml2js')
+const { wx_key } = require("../config/wx");
 
 //  盐: 与密码一起加密的字符串(自定义的)
 // const salt = "letao"; // 已经放入env文件中，可以全局访问
@@ -90,14 +93,59 @@ module.exports.getRandom = (min, max) => {
 
 // 微信下单
 module.exports.createOrder = (url, params) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const data = await axios({
       url,
       method: "POST",
-      params
+      data: params
     })
-    resolve(data)
+    xml.parseString(data.data, function (err, res) {
+      console.log(res.xml);
+      if (err) return reject(err);
+      resolve(res.xml)
+    })
+
+  })
+}
+
+// 微信订单查询
+module.exports.queryOrder = (url, params) => {
+  return new Promise(async (resolve, reject) => {
+    const data = await axios({
+      url,
+      method: "POST",
+      data: params
+    })
+    xml.parseString(data.data, function (err, res) {
+      console.log(res.xml);
+      if (err) return reject(err);
+      resolve(res.xml)
+    })
+
   })
 }
 
 // 生成32位以内的随机字符串 而且是不重复的
+module.exports.getRandomStr = () => {
+  return this.getRandomLength(8) + new Date().getTime()
+}
+
+// 生成商户订单号(要求32个字符内，只能是数字、大小写字母)
+module.exports.getTrade_no = () => {
+  return this.getRandomStr() + this.getRandomLength(6)
+}
+
+// 生成签名算法
+// 设所有发送或者接收到的数据为集合M，将集合M内非空参数值的参数按照参数名ASCII码从小到大排序（字典序），
+// 使用URL键值对的格式（即key1=value1&key2=value2…）拼接成字符串stringA。
+// 在stringA最后拼接上key得到stringSignTemp字符串，并对stringSignTemp进行M
+// 再将得到的字符串所有字符转换为大写，得到sign值signValue。 注意：密钥的长度为32个字节。
+module.exports.createSign = (args) => {
+  let stringA = "";
+  Object.keys(args).sort().forEach(key => {
+    stringA += `${key}=${args[key]}&`
+  })
+  stringA += `key=${wx_key}`;
+  // console.log(stringA, "stringA");
+  return crypto.createHash("MD5").update(stringA).digest("hex").toUpperCase();
+}

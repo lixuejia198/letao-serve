@@ -6,8 +6,11 @@ const onerror = require('koa-onerror') // 处理异常
 const bodyparser = require('koa-bodyparser') // 解析post请求
 const logger = require('koa-logger') // 记录日志
 const jwt = require('koa-jwt') // 引入koa-jwt
+const xmlParser = require('koa-xml-body')
+
 // 配置env
 require('dotenv').config()
+app.use(xmlParser())
 
 // 加载路由
 const index = require('./routes/index')
@@ -19,21 +22,21 @@ const order = require("./routes/order")
 // error handler 错误处理
 onerror(app)
 
-// 使用koa-jwt中间件 未拦截客户端在调用接口时 如果请求头中没有设置token 返回401
-app.use((ctx, next) => {
-  return next().catch((err) => {
-    if (err.status == 401) {
-      ctx.status == 401;
-      ctx.body = "没有访问权限"
-    } else {
-      throw err;
-    }
-  })
-});
-// 设置哪些接口需要带token
-// jwt(加密信息) 加密信息一定要跟token生成时使用加密字符串保持一致
-// unless 排除哪些不需要在请求时带token
-app.use(jwt({ secret: process.env.tokenSecret }).unless({ path: [/^\/public/, /^\/users\/register/, /^\/users\/login/] }))
+// // 使用koa-jwt中间件 未拦截客户端在调用接口时 如果请求头中没有设置token 返回401
+// app.use((ctx, next) => {
+//   return next().catch((err) => {
+//     if (err.status == 401) {
+//       ctx.status == 401;
+//       ctx.body = "没有访问权限"
+//     } else {
+//       throw err;
+//     }
+//   })
+// });
+// // 设置哪些接口需要带token
+// // jwt(加密信息) 加密信息一定要跟token生成时使用加密字符串保持一致
+// // unless 排除哪些不需要在请求时带token
+// app.use(jwt({ secret: process.env.tokenSecret }).unless({ path: [/^\/public/, /^\/users\/register/, /^\/users\/login/] }))
 
 // middlewares 中间件
 app.use(bodyparser({

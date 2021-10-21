@@ -2,7 +2,7 @@ var mysql = require('mysql');
 const { mysqlConfig } = require("./config");
 // console.log(mysqlConfig[process.env.DB_ENV]);
 // 创建数据库池
-var pool = mysql.createPool(mysqlConfig[process.env.DB_ENV || "dev"]);
+var pool = mysql.createPool(mysqlConfig);
 
 // 创建数据库连接
 module.exports.query = (sql, payload) => {
