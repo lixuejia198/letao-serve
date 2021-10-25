@@ -6,6 +6,7 @@ var pool = mysql.createPool(mysqlConfig);
 
 // 创建数据库连接
 module.exports.query = (sql, payload) => {
+  // console.log("sql", sql, "payload", payload);
   // 返回promise返回的结果
   return new Promise((resolve, reject) => {
     pool.getConnection(function (err, connection) {
