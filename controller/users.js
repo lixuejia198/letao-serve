@@ -10,7 +10,7 @@ module.exports.register = async (ctx) => {
     // 校验用户名
     username: Joi.string().min(2).max(20).required(),
     // 校验密码
-    password: Joi.string().pattern(/^[a-zA-Z0-9]{3,30}$/),
+    password: Joi.string().pattern(/^[a-zA-Z0-9]{6,30}$/),
     // 再次校验密码
     repeat_password: Joi.ref('password'),
     // 校验手机号
@@ -55,17 +55,16 @@ module.exports.login = async (ctx) => {
   console.log(ctx.request.body);
   const { username, password } = ctx.request.body;
   const user = await findUserByUP(username, cryptoPassword(password));
-  console.log(user);
+  // console.log(user);
   // console.log(process.env.DB_SALT);
   // console.log(cryptoPassword(password));
   if (user[0]) {
     // 利用jsonwebtoken(jwt)生成token(令牌)
     const token = jwt.sign({
       data: {
-        username,
-        password
+        username
       }
-    }, process.env.tokenSecret, { expiresIn: '1h' });
+    }, process.env.tokenSecret, { expiresIn: '24h' });
     ctx.body = {
       status: 200,
       token: token,
@@ -73,7 +72,7 @@ module.exports.login = async (ctx) => {
     }
   } else {
     ctx.body = {
-      status: 200,
+      status: 0,
       msg: "登录失败，请检查用户名或密码"
     }
   }
